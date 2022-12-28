@@ -54,7 +54,7 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim10);
   HAL_TIM_Base_Start_IT(&htim11);
   kominit();
-
+  init();
   while (1)
   {
     /* USER CODE END WHILE */
