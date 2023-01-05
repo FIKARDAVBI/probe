@@ -24,12 +24,14 @@ void wakturtc(uint8_t timebuff, char datat[]);
 void ambildata();
 void init();
 void clearstring(char data__[],uint8_t ukuran);
+uint8_t buatcs(char dat_[]);
 
 typedef struct {
 	char telemetri1[36];
 	char telemetri2[30];
 	char telemetri3[50];
 	char telemetri4[50];
+	char telemetribuff[150];
 	char telemetritotal[150];
 
 	char jam[2];

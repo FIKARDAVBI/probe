@@ -19,7 +19,7 @@ extern UART_HandleTypeDef huart3;
 uint8_t flagtel=0;
 uint16_t mseconds;
 datatelemetri_t datatelemetri;
-uint8_t check;
+uint8_t check,csh;
 
 char commandbuff[15];
 
@@ -52,6 +52,28 @@ void init()
 	datatelemetri.tilt_y = 10.66;
 	sprintf(datatelemetri.echocmd,"SIMENABLE");
 }
+
+uint8_t buatcs(char dat_[])
+{
+    uint8_t hasil = 0, temp = 0;
+    uint16_t buffhasil = 0;
+    for(int i=0;i<150;i++)
+    {
+        if(dat_[i]== '\0')
+        {
+        	break;
+        }
+        else
+        {
+            buffhasil += dat_[i];
+        }
+    }
+    hasil = buffhasil;
+    temp = buffhasil >>8;
+    hasil += temp;
+    return hasil;
+}
+
 void ambildata()
 {
 	get_time();
@@ -61,11 +83,14 @@ void ambildata()
 	clearstring(datatelemetri.telemetri3,50);
 	clearstring(datatelemetri.telemetri4,50);
 	clearstring(datatelemetri.telemetritotal,150);
+	clearstring(datatelemetri.telemetribuff,150);
 	sprintf(datatelemetri.telemetri1,"%d,%c%c:%c%c:%c%c.%c%c,%d,%c,%s",TEAM_ID,datatelemetri.jam[0],datatelemetri.jam[1],datatelemetri.menit[0],datatelemetri.menit[1],datatelemetri.detik[0],datatelemetri.detik[1],datatelemetri.sentidetik[0],datatelemetri.sentidetik[1],datatelemetri.packetcount,datatelemetri.fmode,datatelemetri.state);
 	sprintf(datatelemetri.telemetri2,",%.1f,%c,%c,%c,%.1f",datatelemetri.alt,datatelemetri.hsdeploy,datatelemetri.pcdeploy,datatelemetri.mastraised,datatelemetri.temp);
 	sprintf(datatelemetri.telemetri3,",%.1f,%c%c:%c%c:%c%c,%.1f,%.4f,%.4f",datatelemetri.voltage,datatelemetri.gpsjam[0],datatelemetri.gpsjam[1],datatelemetri.gpsmenit[0],datatelemetri.gpsmenit[1],datatelemetri.gpsdetik[0],datatelemetri.gpsdetik[1],datatelemetri.gpsalt,datatelemetri.gpslati,datatelemetri.gpslongi);
-	sprintf(datatelemetri.telemetri4,",%d,%.2f,%.2f,%s\n",datatelemetri.gpssat,datatelemetri.tilt_x,datatelemetri.tilt_y,datatelemetri.echocmd);
-	sprintf(datatelemetri.telemetritotal,"%s%s%s%s",datatelemetri.telemetri1,datatelemetri.telemetri2,datatelemetri.telemetri3,datatelemetri.telemetri4);
+	sprintf(datatelemetri.telemetri4,",%d,%.2f,%.2f,%s,,",datatelemetri.gpssat,datatelemetri.tilt_x,datatelemetri.tilt_y,datatelemetri.echocmd);
+	sprintf(datatelemetri.telemetribuff,"%s%s%s%s",datatelemetri.telemetri1,datatelemetri.telemetri2,datatelemetri.telemetri3,datatelemetri.telemetri4);
+	csh = ~buatcs(datatelemetri.telemetribuff);
+	sprintf(datatelemetri.telemetritotal,"%s%d\n",datatelemetri.telemetribuff,csh);
 }
 
 void kirimdata()
