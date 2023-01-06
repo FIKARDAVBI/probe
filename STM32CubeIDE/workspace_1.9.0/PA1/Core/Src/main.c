@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "kom.h"
 #include "task.h"
+#include "BME280_STM32.h"
 
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
@@ -18,7 +19,6 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_usart3_rx;
 DMA_HandleTypeDef hdma_usart3_tx;
-char kata[]="good";
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -28,7 +28,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	}
 	else if (htim == &htim11)
 	{
-
+		BME280_Measure();
 	}
 }
 
@@ -55,6 +55,7 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim11);
   kominit();
   init();
+  BME280_Config(OSRS_2, OSRS_16, OSRS_1, MODE_NORMAL, T_SB_0p5, IIR_16);
   while (1)
   {
     /* USER CODE END WHILE */

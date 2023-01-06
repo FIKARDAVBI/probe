@@ -25,6 +25,7 @@ void ambildata();
 void init();
 void clearstring(char data__[],uint8_t ukuran);
 uint8_t buatcs(char dat_[]);
+float pressuretoalt(float press);
 
 typedef struct {
 	char telemetri1[36];

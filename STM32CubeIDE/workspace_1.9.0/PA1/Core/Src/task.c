@@ -3,6 +3,7 @@
  *
  *  Created on: Dec 26, 2022
  *      Author: user
+ *
  */
 #include "task.h"
 #include "kom.h"
@@ -11,6 +12,9 @@
 #include "inttypes.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "BME280_STM32.h"
+#include "math.h"
+
 #define TEAM_ID 1010
 
 extern RTC_HandleTypeDef hrtc;
@@ -21,8 +25,9 @@ uint16_t mseconds;
 datatelemetri_t datatelemetri;
 uint8_t check,csh;
 
-char commandbuff[15];
+float Temperature, Pressure,Humidity;
 
+char commandbuff[15];
 
 void maintask()
 {
@@ -41,8 +46,6 @@ void init()
 	datatelemetri.hsdeploy = 'N';
 	datatelemetri.pcdeploy = 'N';
 	datatelemetri.mastraised = 'N';
-	datatelemetri.alt = 10.33;
-	datatelemetri.temp = 9.22;
 	datatelemetri.voltage = 4.123;
 	datatelemetri.gpsalt = 20.45;
 	datatelemetri.gpslati = 53.8160182;
@@ -74,9 +77,18 @@ uint8_t buatcs(char dat_[])
     return hasil;
 }
 
+float pressuretoalt(float press)
+{
+	float hasil;
+	hasil = 44330 * (1-pow((press/1013.25),(1/5.255)));
+	return hasil;
+}
+
 void ambildata()
 {
 	get_time();
+	datatelemetri.temp = Temperature;
+	datatelemetri.alt = pressuretoalt(Pressure/100);
 	datatelemetri.packetcount++;
 	clearstring(datatelemetri.telemetri1,36);
 	clearstring(datatelemetri.telemetri2,30);
