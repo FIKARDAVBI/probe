@@ -14,16 +14,19 @@
 #include <stdlib.h>
 #include "BME280_STM32.h"
 #include "math.h"
+#include "MPU6050.h"
 
 #define TEAM_ID 1010
 
 extern RTC_HandleTypeDef hrtc;
 extern UART_HandleTypeDef huart3;
+extern I2C_HandleTypeDef hi2c2;
 
 uint8_t flagtel=0;
 uint16_t mseconds;
 datatelemetri_t datatelemetri;
 uint8_t check,csh;
+MPU6050_t MPU6050;
 
 float Temperature, Pressure,Humidity;
 
@@ -51,8 +54,6 @@ void init()
 	datatelemetri.gpslati = 53.8160182;
 	datatelemetri.gpslongi = -3.0566566;
 	datatelemetri.gpssat = 6;
-	datatelemetri.tilt_x = 47.444;
-	datatelemetri.tilt_y = 10.66;
 	sprintf(datatelemetri.echocmd,"SIMENABLE");
 }
 
@@ -84,11 +85,17 @@ float pressuretoalt(float press)
 	return hasil;
 }
 
+void MPUread()
+{
+	MPU6050_Read_All(&hi2c2, &MPU6050);
+}
 void ambildata()
 {
 	get_time();
 	datatelemetri.temp = Temperature;
 	datatelemetri.alt = pressuretoalt(Pressure/100);
+	datatelemetri.tilt_x = MPU6050.KalmanAngleX;
+	datatelemetri.tilt_y = MPU6050.KalmanAngleY;
 	datatelemetri.packetcount++;
 	clearstring(datatelemetri.telemetri1,36);
 	clearstring(datatelemetri.telemetri2,30);

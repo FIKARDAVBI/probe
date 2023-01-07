@@ -5,6 +5,7 @@
 #include "kom.h"
 #include "task.h"
 #include "BME280_STM32.h"
+#include "MPU6050.h"
 
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
@@ -19,16 +20,20 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_usart3_rx;
 DMA_HandleTypeDef hdma_usart3_tx;
+uint8_t count;
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim == &htim10)
 	{
 		maintask();
+		count++;
 	}
 	else if (htim == &htim11)
 	{
 		BME280_Measure();
+		count++;
+		  //MPUread();
 	}
 }
 
@@ -56,6 +61,7 @@ int main(void)
   kominit();
   init();
   BME280_Config(OSRS_2, OSRS_16, OSRS_1, MODE_NORMAL, T_SB_0p5, IIR_16);
+  //while (MPU6050_Init(&hi2c2) == 1);
   while (1)
   {
     /* USER CODE END WHILE */
