@@ -22,13 +22,13 @@ extern RTC_HandleTypeDef hrtc;
 extern UART_HandleTypeDef huart3;
 extern I2C_HandleTypeDef hi2c2;
 
-uint8_t flagtel=0;
+uint8_t flagtel=0,flagsim = 0;
 uint16_t mseconds;
 datatelemetri_t datatelemetri;
 uint8_t check,csh;
 MPU6050_t MPU6050;
 
-float Temperature, Pressure,Humidity;
+float Temperature, Pressure,Humidity,Spressure;
 
 char commandbuff[15];
 
@@ -54,7 +54,7 @@ void init()
 	datatelemetri.gpslati = 53.8160182;
 	datatelemetri.gpslongi = -3.0566566;
 	datatelemetri.gpssat = 6;
-	sprintf(datatelemetri.echocmd,"SIMENABLE");
+	sprintf(datatelemetri.echocmd,"CXON");
 }
 
 uint8_t buatcs(char dat_[])
@@ -93,7 +93,12 @@ void ambildata()
 {
 	get_time();
 	datatelemetri.temp = Temperature;
-	datatelemetri.alt = pressuretoalt(Pressure/100);
+	if(flagsim == 0)
+		datatelemetri.alt = pressuretoalt(Pressure/100);
+	else if(flagsim == 2)
+	{
+		datatelemetri.alt = pressuretoalt(Spressure);
+	}
 	datatelemetri.tilt_x = MPU6050.KalmanAngleX;
 	datatelemetri.tilt_y = MPU6050.KalmanAngleY;
 	datatelemetri.packetcount++;
@@ -207,6 +212,7 @@ void CX()
 
 void ST()
 {
+	clearstring(commandbuff,15);
 	isidata(4,commandbuff);
 	uint8_t bufjam,bufmenit,bufdetik;
 	char bufjam_[3],bufmenit_[3],bufdetik_[3];
@@ -226,12 +232,29 @@ void ST()
 
 void SIM()
 {
-
+	isidata(4,commandbuff);
+	if(commandbuff[0] == 'E' && commandbuff[1] == 'N')
+	{
+		flagsim = 1;
+	}
+	else if(flagsim == 1 && commandbuff[0] == 'A' && commandbuff[1] == 'C')
+	{
+		flagsim = 2;
+	}
+	else if(commandbuff[0] == 'D' && commandbuff[1] == 'I')
+	{
+		flagsim = 0;
+	}
 }
 
 void SIMP()
 {
-
+	if(flagsim == 2)
+	{
+		clearstring(commandbuff,15);
+		isidata(4,commandbuff);
+		Spressure = atof(commandbuff);
+	}
 }
 
 void CAL()

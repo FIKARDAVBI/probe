@@ -28,7 +28,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	{
 		maintask();
 	}
-	else if (htim == &htim11)
+
+	if (htim == &htim11)
 	{
 		count++;
 		if(count > 252)
