@@ -60,12 +60,13 @@ int main(void)
   MX_FATFS_Init();
   initmcu();
   rtcbackup();
-  HAL_TIM_Base_Start_IT(&htim10);
-  HAL_TIM_Base_Start_IT(&htim11);
   kominit();
   init();
   BME280_Config(OSRS_2, OSRS_16, OSRS_1, MODE_NORMAL, T_SB_0p5, IIR_16);
   while (MPU6050_Init(&hi2c2) == 1);
+  HAL_TIM_Base_Start_IT(&htim11);
+  HAL_Delay(1000);
+  HAL_TIM_Base_Start_IT(&htim10);
   while (1)
   {
     /* USER CODE END WHILE */

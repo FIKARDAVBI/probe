@@ -22,8 +22,8 @@ extern RTC_HandleTypeDef hrtc;
 extern UART_HandleTypeDef huart3;
 extern I2C_HandleTypeDef hi2c2;
 
-uint8_t flagtel=0,flagsim = 0,flagstate = 0;
-uint16_t mseconds;
+uint8_t flagtel=0,flagsim = 0,flagstate = 0,valid = 0;
+uint16_t mseconds,counting = 1;
 datatelemetri_t datatelemetri;
 uint8_t check,csh;
 MPU6050_t MPU6050;
@@ -35,9 +35,9 @@ char commandbuff[15];
 void maintask()
 {
 	ambildata();
-
 	if(flagtel == 1)
 	{
+		counting++;
 		kirimdata();
 	}
 }
@@ -92,7 +92,7 @@ void MPUread()
 void ambildata()
 {
 	get_time();
-	datatelemetri.packetcount++;
+	datatelemetri.packetcount = counting;
 	datatelemetri.temp = Temperature;
 	tempalt = datatelemetri.alt;
 	if(flagsim == 0 || flagsim == 1)
@@ -295,8 +295,13 @@ void state()
 	}
 	else if((datatelemetri.alt - tempalt) < 0 && flagstate == 1)
 	{
-		sprintf(datatelemetri.state,"DESCENT");
-		flagstate = 2;
+		valid++;
+		if(valid == 2)
+		{
+			sprintf(datatelemetri.state,"DESCENT");
+			flagstate = 2;
+			valid = 0;
+		}
 	}
 	else if(datatelemetri.alt < 500 && flagstate == 2)
 	{
@@ -310,7 +315,7 @@ void state()
 		flagstate =4;
 		//menjalankan mekanisme membuka parasut
 	}
-	else if(datatelemetri.alt < 5 && flagstate == 4)
+	else if(datatelemetri.alt < 13 && flagstate == 4)
 	{
 		sprintf(datatelemetri.state,"LANDED");
 		flagstate =5;
