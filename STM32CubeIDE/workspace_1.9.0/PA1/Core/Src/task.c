@@ -22,13 +22,13 @@ extern RTC_HandleTypeDef hrtc;
 extern UART_HandleTypeDef huart3;
 extern I2C_HandleTypeDef hi2c2;
 
-uint8_t flagtel=0,flagsim = 0;
+uint8_t flagtel=0,flagsim = 0,flagstate = 0;
 uint16_t mseconds;
 datatelemetri_t datatelemetri;
 uint8_t check,csh;
 MPU6050_t MPU6050;
 
-float Temperature, Pressure,Humidity,Spressure;
+float Temperature, Pressure,Humidity,Spressure = 101325,refalt = 0,tempalt = 0;
 
 char commandbuff[15];
 
@@ -44,7 +44,7 @@ void maintask()
 
 void init()
 {
-	sprintf(datatelemetri.state,"LAUNCH");
+	sprintf(datatelemetri.state,"LAUNCH_WAIT");
 	datatelemetri.fmode = 'F';
 	datatelemetri.hsdeploy = 'N';
 	datatelemetri.pcdeploy = 'N';
@@ -92,16 +92,25 @@ void MPUread()
 void ambildata()
 {
 	get_time();
+	datatelemetri.packetcount++;
 	datatelemetri.temp = Temperature;
-	if(flagsim == 0)
+	tempalt = datatelemetri.alt;
+	if(flagsim == 0 || flagsim == 1)
+	{
 		datatelemetri.alt = pressuretoalt(Pressure/100);
+		datatelemetri.alt -= refalt;
+	}
 	else if(flagsim == 2)
 	{
-		datatelemetri.alt = pressuretoalt(Spressure);
+		datatelemetri.alt = pressuretoalt(Spressure/100);
 	}
+	if(datatelemetri.alt < 0)
+	{
+		datatelemetri.alt = 0;
+	}
+	state();
 	datatelemetri.tilt_x = MPU6050.KalmanAngleX;
 	datatelemetri.tilt_y = MPU6050.KalmanAngleY;
-	datatelemetri.packetcount++;
 	clearstring(datatelemetri.telemetri1,36);
 	clearstring(datatelemetri.telemetri2,30);
 	clearstring(datatelemetri.telemetri3,50);
@@ -233,17 +242,26 @@ void ST()
 void SIM()
 {
 	isidata(4,commandbuff);
-	if(commandbuff[0] == 'E' && commandbuff[1] == 'N')
+	if(flagsim == 0 && commandbuff[0] == 'E' && commandbuff[1] == 'N')
 	{
+		clearstring(datatelemetri.echocmd,15);
 		flagsim = 1;
+		sprintf(datatelemetri.echocmd,"SIMENABLE");
 	}
 	else if(flagsim == 1 && commandbuff[0] == 'A' && commandbuff[1] == 'C')
 	{
+		clearstring(datatelemetri.echocmd,15);
 		flagsim = 2;
+		datatelemetri.fmode = 'S';
+		sprintf(datatelemetri.echocmd,"SIMACTIVATE");
+
 	}
 	else if(commandbuff[0] == 'D' && commandbuff[1] == 'I')
 	{
+		clearstring(datatelemetri.echocmd,15);
 		flagsim = 0;
+		datatelemetri.fmode = 'F';
+		sprintf(datatelemetri.echocmd,"SIMDISABLE");
 	}
 }
 
@@ -251,14 +269,52 @@ void SIMP()
 {
 	if(flagsim == 2)
 	{
+		clearstring(datatelemetri.echocmd,15);
 		clearstring(commandbuff,15);
 		isidata(4,commandbuff);
 		Spressure = atof(commandbuff);
+		sprintf(datatelemetri.echocmd,"SIMP%.2f",Spressure);
 	}
 }
 
 void CAL()
 {
+	if(flagsim == 0)
+		refalt = pressuretoalt(Pressure/100);
+	flagtel = 0;
+	init();
+	flagsim = 0;
+}
 
+void state()
+{
+	if(datatelemetri.alt > 100 && flagstate == 0)
+	{
+		sprintf(datatelemetri.state,"ASCENT");
+		flagstate = 1;
+	}
+	else if((datatelemetri.alt - tempalt) < 0 && flagstate == 1)
+	{
+		sprintf(datatelemetri.state,"DESCENT");
+		flagstate = 2;
+	}
+	else if(datatelemetri.alt < 500 && flagstate == 2)
+	{
+		sprintf(datatelemetri.state,"HS_DEPLOYED");
+		flagstate = 3;
+		//mulai rekam kamera, menjalankan mekanisme rilis payload dan buka heatshield
+	}
+	else if(datatelemetri.alt < 200 && flagstate == 3)
+	{
+		sprintf(datatelemetri.state,"PC_DEPLOYED");
+		flagstate =4;
+		//menjalankan mekanisme membuka parasut
+	}
+	else if(datatelemetri.alt < 5 && flagstate == 4)
+	{
+		sprintf(datatelemetri.state,"LANDED");
+		flagstate =5;
+		//kamera mat,buzzernyala,mulai mekanisme upright
+	}
 }
 
