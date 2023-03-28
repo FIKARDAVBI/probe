@@ -57,16 +57,6 @@ typedef struct {
 	float temp;
 	float voltage;
 
-	char gpsjam[2];
-	char gpsmenit[2];
-	char gpsdetik[2];
-
-	float gpsalt;
-	float gpslati;
-	float gpslongi;
-
-	uint8_t gpssat;
-
 	float tilt_x;
 	float tilt_y;
 

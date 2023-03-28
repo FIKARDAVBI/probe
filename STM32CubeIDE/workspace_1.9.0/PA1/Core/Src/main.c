@@ -6,6 +6,7 @@
 #include "task.h"
 #include "BME280_STM32.h"
 #include "MPU6050.h"
+#include "gps.h"
 
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
@@ -50,6 +51,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	if(huart == &huart2)
 	{
 		checkdata_();
+	}
+	if(huart == &huart1)
+	{
+		checkgpsdata();
 	}
 }
 

@@ -15,6 +15,7 @@
 #include "BME280_STM32.h"
 #include "math.h"
 #include "MPU6050.h"
+#include "gps.h"
 
 #define TEAM_ID 1085
 
@@ -29,6 +30,10 @@ uint8_t check,csh;
 MPU6050_t MPU6050;
 
 float Temperature, Pressure,Humidity,Spressure = 101325,refalt = 0,tempalt = 0;
+
+float gpslat,gpslong,gpsalt;
+uint8_t gpssat;
+char gpsdetik[3],gpsmenit[3],gpsjam[3];
 
 char commandbuff[15];
 
@@ -50,10 +55,6 @@ void init()
 	datatelemetri.pcdeploy = 'N';
 	datatelemetri.mastraised = 'N';
 	datatelemetri.voltage = 4.123;
-	datatelemetri.gpsalt = 20.45;
-	datatelemetri.gpslati = 53.8160182;
-	datatelemetri.gpslongi = -3.0566566;
-	datatelemetri.gpssat = 6;
 	sprintf(datatelemetri.echocmd,"CXON");
 }
 
@@ -121,8 +122,8 @@ void ambildata()
 	clearstring(datatelemetri.telemetribuff,150);
 	sprintf(datatelemetri.telemetri1,"%d,%c%c:%c%c:%c%c.%c%c,%d,%c,%s",TEAM_ID,datatelemetri.jam[0],datatelemetri.jam[1],datatelemetri.menit[0],datatelemetri.menit[1],datatelemetri.detik[0],datatelemetri.detik[1],datatelemetri.sentidetik[0],datatelemetri.sentidetik[1],datatelemetri.packetcount,datatelemetri.fmode,datatelemetri.state);
 	sprintf(datatelemetri.telemetri2,",%.1f,%c,%c,%c,%.1f,%.1f",datatelemetri.alt,datatelemetri.hsdeploy,datatelemetri.pcdeploy,datatelemetri.mastraised,datatelemetri.temp,datatelemetri.barpress);
-	sprintf(datatelemetri.telemetri3,",%.1f,%c%c:%c%c:%c%c,%.1f,%.4f,%.4f",datatelemetri.voltage,datatelemetri.gpsjam[0],datatelemetri.gpsjam[1],datatelemetri.gpsmenit[0],datatelemetri.gpsmenit[1],datatelemetri.gpsdetik[0],datatelemetri.gpsdetik[1],datatelemetri.gpsalt,datatelemetri.gpslati,datatelemetri.gpslongi);
-	sprintf(datatelemetri.telemetri4,",%d,%.2f,%.2f,%s,,",datatelemetri.gpssat,datatelemetri.tilt_x,datatelemetri.tilt_y,datatelemetri.echocmd);
+	sprintf(datatelemetri.telemetri3,",%.1f,%c%c:%c%c:%c%c,%.1f,%.4f,%.4f",datatelemetri.voltage,gpsjam[0],gpsjam[1],gpsmenit[0],gpsmenit[1],gpsdetik[0],gpsdetik[1],gpsalt,gpslat,gpslong);
+	sprintf(datatelemetri.telemetri4,",%d,%.2f,%.2f,%s,,",gpssat,datatelemetri.tilt_x,datatelemetri.tilt_y,datatelemetri.echocmd);
 	sprintf(datatelemetri.telemetribuff,"%s%s%s%s",datatelemetri.telemetri1,datatelemetri.telemetri2,datatelemetri.telemetri3,datatelemetri.telemetri4);
 	csh = ~buatcs(datatelemetri.telemetribuff);
 	sprintf(datatelemetri.telemetritotal,"%s%d\r",datatelemetri.telemetribuff,csh);
@@ -167,9 +168,6 @@ void get_time(void)
 	wakturtc(gTime.Minutes,datatelemetri.menit);
 	wakturtc(gTime.Seconds,datatelemetri.detik);
 	wakturtc(mseconds,datatelemetri.sentidetik);
-	wakturtc(gTime.Hours,datatelemetri.gpsjam);
-	wakturtc(gTime.Minutes,datatelemetri.gpsmenit);
-	wakturtc(gTime.Seconds,datatelemetri.gpsdetik);
 }
 
 void Settime(uint8_t jam_, uint8_t menit_, uint8_t detik_)
