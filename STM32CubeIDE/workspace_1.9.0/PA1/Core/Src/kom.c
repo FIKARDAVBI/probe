@@ -8,9 +8,9 @@
 #include "task.h"
 #include "stm32f4xx_hal.h"
 
-char cx[]="CX",st[]="ST",sim[]="SIM",simp[]="SIMP",cal[]="CAL", end[]="\n\r",tn[]="1010";
+char cx[]="CX",st[]="ST",sim[]="SIM",simp[]="SIMP",cal[]="CAL", end[]="\n\r",tn[]="1085";
 uint8_t cmd,rxdata[2],datalkp[30],i;
-extern UART_HandleTypeDef huart3;
+extern UART_HandleTypeDef huart2;
 
 void isidata(uint8_t urutan,char dat_[])
 {
@@ -47,7 +47,7 @@ uint8_t cocokan(uint8_t urutan,char dat[])
 
 void checkdata_()
 {
-	HAL_UART_Receive_DMA(&huart3, (uint8_t*)rxdata, 1);
+	HAL_UART_Receive_DMA(&huart2, (uint8_t*)rxdata, 1);
 	if(rxdata[0]=='C')
 	{
 		cmd++;
@@ -86,5 +86,5 @@ void checkdata_()
 
 void kominit(void)
 {
-	HAL_UART_Receive_DMA(&huart3, (uint8_t*)rxdata, 1);
+	HAL_UART_Receive_DMA(&huart2, (uint8_t*)rxdata, 1);
 }

@@ -48,6 +48,7 @@ typedef struct {
 	char state[15];
 
 	float alt;
+	float barpress;
 
 	char hsdeploy;
 	char pcdeploy;

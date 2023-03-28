@@ -16,10 +16,10 @@
 #include "math.h"
 #include "MPU6050.h"
 
-#define TEAM_ID 1010
+#define TEAM_ID 1085
 
 extern RTC_HandleTypeDef hrtc;
-extern UART_HandleTypeDef huart3;
+extern UART_HandleTypeDef huart2;
 extern I2C_HandleTypeDef hi2c2;
 
 uint8_t flagtel=0,flagsim = 0,flagstate = 0,valid = 0;
@@ -98,11 +98,13 @@ void ambildata()
 	if(flagsim == 0 || flagsim == 1)
 	{
 		datatelemetri.alt = pressuretoalt(Pressure/100);
+		datatelemetri.barpress = Pressure/1000;
 		datatelemetri.alt -= refalt;
 	}
 	else if(flagsim == 2)
 	{
 		datatelemetri.alt = pressuretoalt(Spressure/100);
+		datatelemetri.barpress = Spressure/1000;
 	}
 	if(datatelemetri.alt < 0)
 	{
@@ -118,17 +120,24 @@ void ambildata()
 	clearstring(datatelemetri.telemetritotal,150);
 	clearstring(datatelemetri.telemetribuff,150);
 	sprintf(datatelemetri.telemetri1,"%d,%c%c:%c%c:%c%c.%c%c,%d,%c,%s",TEAM_ID,datatelemetri.jam[0],datatelemetri.jam[1],datatelemetri.menit[0],datatelemetri.menit[1],datatelemetri.detik[0],datatelemetri.detik[1],datatelemetri.sentidetik[0],datatelemetri.sentidetik[1],datatelemetri.packetcount,datatelemetri.fmode,datatelemetri.state);
-	sprintf(datatelemetri.telemetri2,",%.1f,%c,%c,%c,%.1f",datatelemetri.alt,datatelemetri.hsdeploy,datatelemetri.pcdeploy,datatelemetri.mastraised,datatelemetri.temp);
+	sprintf(datatelemetri.telemetri2,",%.1f,%c,%c,%c,%.1f,%.1f",datatelemetri.alt,datatelemetri.hsdeploy,datatelemetri.pcdeploy,datatelemetri.mastraised,datatelemetri.temp,datatelemetri.barpress);
 	sprintf(datatelemetri.telemetri3,",%.1f,%c%c:%c%c:%c%c,%.1f,%.4f,%.4f",datatelemetri.voltage,datatelemetri.gpsjam[0],datatelemetri.gpsjam[1],datatelemetri.gpsmenit[0],datatelemetri.gpsmenit[1],datatelemetri.gpsdetik[0],datatelemetri.gpsdetik[1],datatelemetri.gpsalt,datatelemetri.gpslati,datatelemetri.gpslongi);
 	sprintf(datatelemetri.telemetri4,",%d,%.2f,%.2f,%s,,",datatelemetri.gpssat,datatelemetri.tilt_x,datatelemetri.tilt_y,datatelemetri.echocmd);
 	sprintf(datatelemetri.telemetribuff,"%s%s%s%s",datatelemetri.telemetri1,datatelemetri.telemetri2,datatelemetri.telemetri3,datatelemetri.telemetri4);
 	csh = ~buatcs(datatelemetri.telemetribuff);
-	sprintf(datatelemetri.telemetritotal,"%s%d\n",datatelemetri.telemetribuff,csh);
+	sprintf(datatelemetri.telemetritotal,"%s%d\r",datatelemetri.telemetribuff,csh);
 }
 
 void kirimdata()
 {
-	HAL_UART_Transmit_DMA(&huart3,(uint8_t*)datatelemetri.telemetritotal, sizeof(datatelemetri.telemetritotal));
+	int ci = 0;
+	for(int c = 0; c<150;c++)
+	{
+		ci++;
+		if(datatelemetri.telemetritotal[c]=='\000')
+			break;
+	}
+	HAL_UART_Transmit_DMA(&huart2,(uint8_t*)datatelemetri.telemetritotal, ci-1);
 }
 
 void wakturtc(uint8_t timebuff, char datat[])

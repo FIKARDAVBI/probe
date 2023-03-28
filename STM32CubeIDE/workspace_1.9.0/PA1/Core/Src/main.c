@@ -17,10 +17,14 @@ SPI_HandleTypeDef hspi1;
 TIM_HandleTypeDef htim10;
 TIM_HandleTypeDef htim11;
 UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_usart3_rx;
 DMA_HandleTypeDef hdma_usart3_tx;
+DMA_HandleTypeDef hdma_usart2_rx;
+DMA_HandleTypeDef hdma_usart2_tx;
 uint8_t count;
+
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -43,7 +47,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if(huart == &huart3)
+	if(huart == &huart2)
 	{
 		checkdata_();
 	}
@@ -56,21 +60,21 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
 int main(void)
 {
-  HAL_Init();
-  MX_FATFS_Init();
-  initmcu();
-  rtcbackup();
-  kominit();
-  init();
-  BME280_Config(OSRS_2, OSRS_16, OSRS_1, MODE_NORMAL, T_SB_0p5, IIR_16);
-  while (MPU6050_Init(&hi2c2) == 1);
-  HAL_TIM_Base_Start_IT(&htim11);
-  HAL_Delay(1000);
-  HAL_TIM_Base_Start_IT(&htim10);
-  while (1)
-  {
-    /* USER CODE END WHILE */
+	HAL_Init();
+	MX_FATFS_Init();
+	initmcu();
+	rtcbackup();
+	kominit();
+	init();
+	BME280_Config(OSRS_2, OSRS_16, OSRS_1, MODE_NORMAL, T_SB_0p5, IIR_16);
+	while (MPU6050_Init(&hi2c2) == 1);
+	HAL_TIM_Base_Start_IT(&htim11);
+	HAL_Delay(2000);
+	HAL_TIM_Base_Start_IT(&htim10);
+	while (1)
+	{
+	    /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
-  }
+	    /* USER CODE BEGIN 3 */
+	}
 }
