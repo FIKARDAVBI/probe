@@ -17,7 +17,7 @@ void ST();
 void SIM();
 void SIMP();
 void maintask();
-void get_time(void);
+void get_time();
 void CAL();
 void kirimdata();
 void wakturtc(uint8_t timebuff, char datat[]);

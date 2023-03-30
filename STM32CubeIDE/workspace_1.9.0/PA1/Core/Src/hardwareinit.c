@@ -17,9 +17,12 @@ extern RTC_HandleTypeDef hrtc;
 extern SPI_HandleTypeDef hspi1;
 extern TIM_HandleTypeDef htim10;
 extern TIM_HandleTypeDef htim11;
+extern TIM_HandleTypeDef htim13;
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
+extern DMA_HandleTypeDef hdma_usart1_rx;
+extern DMA_HandleTypeDef hdma_usart1_tx;
 extern DMA_HandleTypeDef hdma_usart3_rx;
 extern DMA_HandleTypeDef hdma_usart3_tx;
 extern DMA_HandleTypeDef hdma_usart2_rx;
@@ -27,8 +30,8 @@ extern DMA_HandleTypeDef hdma_usart2_tx;
 
 void initmcu(void)
 {
-	 MX_GPIO_Init();
 	 SystemClock_Config();
+	 MX_GPIO_Init();
 	 MX_I2C1_Init();
 	 MX_I2C2_Init();
 	 MX_RTC_Init();
@@ -38,6 +41,7 @@ void initmcu(void)
 	 MX_USART3_UART_Init();
 	 MX_TIM10_Init();
 	 MX_TIM11_Init();
+	 MX_TIM13_Init();
 	 MX_SPI1_Init();
 	 MX_I2C3_Init();
 	 MX_ADC1_Init();
@@ -206,6 +210,11 @@ void MX_I2C2_Init(void)
 
 }
 
+/**
+  * @brief I2C3 Initialization Function
+  * @param None
+  * @retval None
+  */
 void MX_I2C3_Init(void)
 {
 
@@ -290,7 +299,7 @@ void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -321,9 +330,9 @@ void MX_TIM10_Init(void)
 
   /* USER CODE END TIM10_Init 1 */
   htim10.Instance = TIM10;
-  htim10.Init.Prescaler = 168000-1;
+  htim10.Init.Prescaler = 16800-1;
   htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim10.Init.Period = 1000-1;
+  htim10.Init.Period = 10000-1;
   htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim10.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim10) != HAL_OK)
@@ -352,9 +361,9 @@ void MX_TIM11_Init(void)
 
   /* USER CODE END TIM11_Init 1 */
   htim11.Instance = TIM11;
-  htim11.Init.Prescaler = 168000-1;
+  htim11.Init.Prescaler = 16800-1;
   htim11.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim11.Init.Period = 1;
+  htim11.Init.Period = 2500-1;
   htim11.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim11.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim11) != HAL_OK)
@@ -364,6 +373,37 @@ void MX_TIM11_Init(void)
   /* USER CODE BEGIN TIM11_Init 2 */
 
   /* USER CODE END TIM11_Init 2 */
+
+}
+
+/**
+  * @brief TIM13 Initialization Function
+  * @param None
+  * @retval None
+  */
+void MX_TIM13_Init(void)
+{
+
+  /* USER CODE BEGIN TIM13_Init 0 */
+
+  /* USER CODE END TIM13_Init 0 */
+
+  /* USER CODE BEGIN TIM13_Init 1 */
+
+  /* USER CODE END TIM13_Init 1 */
+  htim13.Instance = TIM13;
+  htim13.Init.Prescaler = 42000;
+  htim13.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim13.Init.Period = 500;
+  htim13.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim13.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim13) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM13_Init 2 */
+
+  /* USER CODE END TIM13_Init 2 */
 
 }
 
@@ -400,6 +440,11 @@ void MX_USART1_UART_Init(void)
 
 }
 
+/**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
 void MX_USART2_UART_Init(void)
 {
 
@@ -438,8 +483,7 @@ void MX_USART3_UART_Init(void)
 
   /* USER CODE BEGIN USART3_Init 0 */
 
-  /* USER CODE END USART3_In
-   * it 0 */
+  /* USER CODE END USART3_Init 0 */
 
   /* USER CODE BEGIN USART3_Init 1 */
 
@@ -488,6 +532,12 @@ void MX_DMA_Init(void)
   /* DMA2_Stream0_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+  /* DMA2_Stream2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+  /* DMA2_Stream7_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
 
 }
 
@@ -548,7 +598,19 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-
-
-
-
+#ifdef  USE_FULL_ASSERT
+/**
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
+void assert_failed(uint8_t *file, uint32_t line)
+{
+  /* USER CODE BEGIN 6 */
+  /* User can add his own implementation to report the file name and line number,
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  /* USER CODE END 6 */
+}
+#endif /* USE_FULL_ASSERT */

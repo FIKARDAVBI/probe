@@ -28,6 +28,7 @@ uint16_t mseconds,counting = 1;
 datatelemetri_t datatelemetri;
 uint8_t check,csh;
 MPU6050_t MPU6050;
+uint8_t flag222;
 
 float Temperature, Pressure,Humidity,Spressure = 101325,refalt = 0,tempalt = 0;
 
@@ -56,6 +57,13 @@ void init()
 	datatelemetri.mastraised = 'N';
 	datatelemetri.voltage = 4.123;
 	sprintf(datatelemetri.echocmd,"CXON");
+	gpslat = 0.0000;
+	gpslong = 0.0000;
+	gpsalt = 0.0;
+	gpssat = 0;
+	sprintf(gpsjam,"00");
+	sprintf(gpsmenit,"00");
+	sprintf(gpsdetik,"00");
 }
 
 uint8_t buatcs(char dat_[])
@@ -82,7 +90,12 @@ uint8_t buatcs(char dat_[])
 float pressuretoalt(float press)
 {
 	float hasil;
-	hasil = 44330 * (1-pow((press/1013.25),(1/5.255)));
+	if(press != 0){
+		hasil = 44330 * (1-pow((press/1013.25),(1/5.255)));
+	}
+	else{
+		hasil = 0;
+	}
 	return hasil;
 }
 
@@ -153,7 +166,7 @@ void wakturtc(uint8_t timebuff, char datat[])
 	}
 }
 
-void get_time(void)
+void get_time()
 {
 	RTC_TimeTypeDef gTime;
 	RTC_DateTypeDef gDate;
@@ -172,7 +185,6 @@ void get_time(void)
 
 void Settime(uint8_t jam_, uint8_t menit_, uint8_t detik_)
 {
-	  HAL_PWR_EnableBkUpAccess();
 	  RTC_TimeTypeDef sTime = {0};
 	  RTC_DateTypeDef sDate = {0};
 
@@ -190,19 +202,18 @@ void Settime(uint8_t jam_, uint8_t menit_, uint8_t detik_)
 	  sDate.Date = 0x1;
 	  sDate.Year = 0x0;
 
-	  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+	  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN) != HAL_OK)
 	  {
 	    Error_Handler();
 	  }
-      HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR1, 0x32BE);
-      HAL_PWR_DisableBkUpAccess();
+      HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR1, 0x32F2);
 }
 
 void rtcbackup()
 {
-	  if(HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR1)!= 0x32BE)
+	  if(HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR1)!= 0x32F2)
 	  {
-	      Settime(0x0,0x0,0x0);
+	      Settime(0,0,0);
 	  }
 }
 
@@ -303,7 +314,7 @@ void state()
 	else if((datatelemetri.alt - tempalt) < 0 && flagstate == 1)
 	{
 		valid++;
-		if(valid == 2)
+		if(valid > 4)
 		{
 			sprintf(datatelemetri.state,"DESCENT");
 			flagstate = 2;

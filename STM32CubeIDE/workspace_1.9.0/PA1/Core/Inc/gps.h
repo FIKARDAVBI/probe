@@ -11,8 +11,10 @@
 
 void checkgpsdata();
 void gpsinit();
+void parsinggpsdata();
 void parsedata(uint8_t urutan_ ,uint8_t data[]);
 uint8_t checkNMEAGPGGA(uint8_t* data);
 void clearchararray(uint8_t* data_, int len);
+float converter(float gps);
 
 #endif /* INC_GPS_H_ */
