@@ -38,6 +38,9 @@ char gpsdetik[3],gpsmenit[3],gpsjam[3];
 
 char commandbuff[15];
 
+extern char buffer[1024];
+extern uint8_t flagsimpan;
+
 void maintask()
 {
 	ambildata();
@@ -45,6 +48,8 @@ void maintask()
 	{
 		counting++;
 		kirimdata();
+		sprintf(buffer,"%s\n",datatelemetri.telemetritotal);
+		flagsimpan = 1;
 	}
 }
 

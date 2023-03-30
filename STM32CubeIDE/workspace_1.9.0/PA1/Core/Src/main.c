@@ -7,6 +7,8 @@
 #include "BME280_STM32.h"
 #include "MPU6050.h"
 #include "gps.h"
+#include "fatfs_sd.h"
+#include "string.h"
 
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
@@ -28,6 +30,33 @@ DMA_HandleTypeDef hdma_usart3_tx;
 DMA_HandleTypeDef hdma_usart2_rx;
 DMA_HandleTypeDef hdma_usart2_tx;
 
+FATFS fs;
+FIL fil;
+FRESULT fresult;
+
+char buffer[1024];
+
+UINT br,bw;
+
+FATFS *pfs;
+DWORD fre_clust;
+uint32_t total,free_space;
+uint8_t flagsimpan = 0;
+
+int bufsize (char *buf)
+{
+	int i=0;
+	while(*buf++ != '\0') i++;
+	return i;
+}
+
+void bufclear(void)
+{
+	for (int i = 0; i<1024; i++)
+	{
+		buffer[i] ='\0';
+	}
+}
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -39,6 +68,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	{
 		parsinggpsdata();
 		maintask();
+	    /* USER CODE BEGIN 3 */
 	}
 
 	if (htim == &htim11)
@@ -67,13 +97,14 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 int main(void)
 {
 	HAL_Init();
-	MX_FATFS_Init();
 	initmcu();
 	init();
 	rtcbackup();
 	BME280_Config(OSRS_2, OSRS_16, OSRS_1, MODE_NORMAL, T_SB_0p5, IIR_16);
 	while (MPU6050_Init(&hi2c2) == 1);
 	kominit();
+	MX_FATFS_Init();
+	fresult = f_mount(&fs,"",0);
 	HAL_TIM_Base_Start_IT(&htim11);
 	HAL_Delay(1000);
 	HAL_TIM_Base_Start_IT(&htim10);
@@ -82,8 +113,15 @@ int main(void)
 	gpsinit();
 	while (1)
 	{
+		if(flagsimpan)
+		{
+			fresult = f_open(&fil, "file13.txt", FA_OPEN_ALWAYS|FA_READ|FA_WRITE);
+			fresult = f_lseek(&fil,f_size(&fil));
+			fresult = f_write(&fil,buffer,bufsize(buffer),&bw);
+			f_close(&fil);
+			HAL_Delay(100);
+			flagsimpan = 0;
+		}
 	    /* USER CODE END WHILE */
-
-	    /* USER CODE BEGIN 3 */
 	}
 }
