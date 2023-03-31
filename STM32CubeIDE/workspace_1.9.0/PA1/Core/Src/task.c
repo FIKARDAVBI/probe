@@ -22,6 +22,7 @@
 extern RTC_HandleTypeDef hrtc;
 extern UART_HandleTypeDef huart2;
 extern I2C_HandleTypeDef hi2c2;
+extern ADC_HandleTypeDef hadc1;
 
 uint8_t flagtel=0,flagsim = 0,flagstate = 0,valid = 0;
 uint16_t mseconds,counting = 1;
@@ -29,6 +30,7 @@ datatelemetri_t datatelemetri;
 uint8_t check,csh;
 MPU6050_t MPU6050;
 uint8_t flag222;
+uint32_t dataadc;
 
 float Temperature, Pressure,Humidity,Spressure = 101325,refalt = 0,tempalt = 0;
 
@@ -40,6 +42,10 @@ char commandbuff[15];
 
 extern char buffer[1024];
 extern uint8_t flagsimpan;
+
+#define FILTER_SIZE 5
+float readings[FILTER_SIZE];
+int ind_ = 0;
 
 void maintask()
 {
@@ -60,7 +66,6 @@ void init()
 	datatelemetri.hsdeploy = 'N';
 	datatelemetri.pcdeploy = 'N';
 	datatelemetri.mastraised = 'N';
-	datatelemetri.voltage = 4.123;
 	sprintf(datatelemetri.echocmd,"CXON");
 	gpslat = 0.0000;
 	gpslong = 0.0000;
@@ -69,6 +74,17 @@ void init()
 	sprintf(gpsjam,"00");
 	sprintf(gpsmenit,"00");
 	sprintf(gpsdetik,"00");
+}
+
+void ADC_measure()
+{
+	float sum = 0;
+	readings[ind_] = ((3.3/4096)*dataadc)*(14.7/4.7);
+	ind_ = (ind_ + 1) % FILTER_SIZE;
+	for (int i = 0; i < FILTER_SIZE; i++) {
+		sum += readings[i];
+	}
+	datatelemetri.voltage =  sum / FILTER_SIZE;
 }
 
 uint8_t buatcs(char dat_[])
@@ -144,7 +160,7 @@ void ambildata()
 	sprintf(datatelemetri.telemetri4,",%d,%.2f,%.2f,%s,,",gpssat,datatelemetri.tilt_x,datatelemetri.tilt_y,datatelemetri.echocmd);
 	sprintf(datatelemetri.telemetribuff,"%s%s%s%s",datatelemetri.telemetri1,datatelemetri.telemetri2,datatelemetri.telemetri3,datatelemetri.telemetri4);
 	csh = ~buatcs(datatelemetri.telemetribuff);
-	sprintf(datatelemetri.telemetritotal,"%s%d\r",datatelemetri.telemetribuff,csh);
+	sprintf(datatelemetri.telemetritotal,"%s%d\r\n",datatelemetri.telemetribuff,csh);
 }
 
 void kirimdata()
@@ -344,5 +360,10 @@ void state()
 		flagstate =5;
 		//kamera mat,buzzernyala,mulai mekanisme upright
 	}
+}
+
+void adcinit()
+{
+	HAL_ADC_Start_DMA(&hadc1, &dataadc, 1);
 }
 

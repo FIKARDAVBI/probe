@@ -28,6 +28,8 @@ uint8_t buatcs(char dat_[]);
 float pressuretoalt(float press);
 void MPUread();
 void state();
+void ADC_measure();
+void adcinit();
 
 typedef struct {
 	char telemetri1[36];

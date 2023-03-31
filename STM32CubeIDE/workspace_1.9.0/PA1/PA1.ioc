@@ -1,10 +1,11 @@
 #MicroXplorer Configuration settings - do not modify
 ADC1.Channel-2\#ChannelRegularConversion=ADC_CHANNEL_9
 ADC1.ContinuousConvMode=ENABLE
-ADC1.IPParameters=Rank-2\#ChannelRegularConversion,master,Channel-2\#ChannelRegularConversion,SamplingTime-2\#ChannelRegularConversion,NbrOfConversionFlag,ScanConvMode,ContinuousConvMode
+ADC1.DMAContinuousRequests=ENABLE
+ADC1.IPParameters=Rank-2\#ChannelRegularConversion,master,Channel-2\#ChannelRegularConversion,SamplingTime-2\#ChannelRegularConversion,NbrOfConversionFlag,ScanConvMode,ContinuousConvMode,DMAContinuousRequests
 ADC1.NbrOfConversionFlag=1
 ADC1.Rank-2\#ChannelRegularConversion=1
-ADC1.SamplingTime-2\#ChannelRegularConversion=ADC_SAMPLETIME_3CYCLES
+ADC1.SamplingTime-2\#ChannelRegularConversion=ADC_SAMPLETIME_112CYCLES
 ADC1.ScanConvMode=DISABLE
 ADC1.master=1
 Dma.ADC1.2.Direction=DMA_PERIPH_TO_MEMORY
@@ -147,6 +148,7 @@ Mcu.UserConstants=
 Mcu.UserName=STM32F407VGTx
 MxCube.Version=6.5.0
 MxDb.Version=DB.6.0.50
+NVIC.ADC_IRQn=true\:0\:0\:false\:false\:true\:true\:true\:true
 NVIC.BusFault_IRQn=true\:0\:0\:false\:false\:true\:false\:false\:true
 NVIC.DMA1_Stream1_IRQn=true\:0\:0\:false\:false\:true\:false\:true\:true
 NVIC.DMA1_Stream3_IRQn=true\:0\:0\:false\:false\:true\:false\:true\:true

@@ -58,6 +58,11 @@ void bufclear(void)
 	}
 }
 
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	ADC_measure();
+}
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim == &htim13)
@@ -105,6 +110,7 @@ int main(void)
 	kominit();
 	MX_FATFS_Init();
 	fresult = f_mount(&fs,"",0);
+	adcinit();
 	HAL_TIM_Base_Start_IT(&htim11);
 	HAL_Delay(1000);
 	HAL_TIM_Base_Start_IT(&htim10);
@@ -115,11 +121,10 @@ int main(void)
 	{
 		if(flagsimpan)
 		{
-			fresult = f_open(&fil, "file13.txt", FA_OPEN_ALWAYS|FA_READ|FA_WRITE);
+			fresult = f_open(&fil, "file17.txt", FA_OPEN_ALWAYS|FA_READ|FA_WRITE);
 			fresult = f_lseek(&fil,f_size(&fil));
 			fresult = f_write(&fil,buffer,bufsize(buffer),&bw);
 			f_close(&fil);
-			HAL_Delay(100);
 			flagsimpan = 0;
 		}
 	    /* USER CODE END WHILE */
