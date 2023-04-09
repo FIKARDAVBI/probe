@@ -225,7 +225,6 @@ int main(void)
 				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, RESET);
 				flagupright = 0;
 				flagdoneupright = 1;
-				halogaes;
 			}
 		}
 
