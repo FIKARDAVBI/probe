@@ -350,7 +350,7 @@ void MX_TIM10_Init(void)
 {
 
   /* USER CODE BEGIN TIM10_Init 0 */
-
+	HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 4, 0);
   /* USER CODE END TIM10_Init 0 */
 
   /* USER CODE BEGIN TIM10_Init 1 */
@@ -381,6 +381,7 @@ void MX_TIM11_Init(void)
 {
 
   /* USER CODE BEGIN TIM11_Init 0 */
+	HAL_NVIC_SetPriority(TIM1_TRG_COM_TIM11_IRQn, 10, 0);
 
   /* USER CODE END TIM11_Init 0 */
 
@@ -412,6 +413,7 @@ void MX_TIM13_Init(void)
 {
 
   /* USER CODE BEGIN TIM13_Init 0 */
+	HAL_NVIC_SetPriority(TIM8_UP_TIM13_IRQn, 9, 0);
 
   /* USER CODE END TIM13_Init 0 */
 
@@ -419,9 +421,9 @@ void MX_TIM13_Init(void)
 
   /* USER CODE END TIM13_Init 1 */
   htim13.Instance = TIM13;
-  htim13.Init.Prescaler = 42000;
+  htim13.Init.Prescaler = 42000-1;
   htim13.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim13.Init.Period = 500;
+  htim13.Init.Period = 250-1;
   htim13.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim13.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim13) != HAL_OK)
@@ -478,6 +480,7 @@ void MX_USART2_UART_Init(void)
   /* USER CODE BEGIN USART2_Init 0 */
 
   /* USER CODE END USART2_Init 0 */
+
 
   /* USER CODE BEGIN USART2_Init 1 */
 
@@ -557,13 +560,13 @@ void MX_DMA_Init(void)
   HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
   /* DMA1_Stream6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 0, 1);
+  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
   /* DMA2_Stream0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 4);
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 2, 4);
   HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
   /* DMA2_Stream2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 0, 2);
+  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 3, 4);
   HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
   /* DMA2_Stream7_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 14, 14);

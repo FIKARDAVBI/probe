@@ -192,12 +192,10 @@ int main(void)
 	while (MPU6050_Init(&hi2c2) == 1);
 	kominit();
 	MX_FATFS_Init();
-	fresult = f_mount(&fs,"",0);
+	fresult = f_mount(&fs,"",0);0
 	adcinit();
 	HAL_TIM_Base_Start_IT(&htim11);
-	HAL_Delay(1000);
 	HAL_TIM_Base_Start_IT(&htim10);
-	HAL_Delay(1000);
 	HAL_TIM_Base_Start_IT(&htim13);
 	gpsinit();
 	while (1)
