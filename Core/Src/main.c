@@ -10,6 +10,7 @@
 #include "fatfs_sd.h"
 #include "string.h"
 #include "servo.h"
+#include "tm_stm32f4_bkpsram.h"
 
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
@@ -186,18 +187,20 @@ int main(void)
 {
 	HAL_Init();
 	initmcu();
+	TM_BKPSRAM_Init();
 	init();
 	rtcbackup();
 	BME280_Config(OSRS_2, OSRS_16, OSRS_1, MODE_NORMAL, T_SB_0p5, IIR_16);
 	while (MPU6050_Init(&hi2c2) == 1);
 	kominit();
 	MX_FATFS_Init();
-	fresult = f_mount(&fs,"",0);0
+	fresult = f_mount(&fs,"",0);
 	adcinit();
-	HAL_TIM_Base_Start_IT(&htim11);
-	HAL_TIM_Base_Start_IT(&htim10);
-	HAL_TIM_Base_Start_IT(&htim13);
 	gpsinit();
+	HAL_TIM_Base_Start_IT(&htim11);
+	HAL_TIM_Base_Start_IT(&htim13);
+	HAL_TIM_Base_Start_IT(&htim10);
+
 	while (1)
 	{
 		if(flaginitmotor)

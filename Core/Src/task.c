@@ -12,13 +12,24 @@
 #include "inttypes.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "BME280_STM32.h"
 #include "math.h"
 #include "MPU6050.h"
 #include "gps.h"
 #include "servo.h"
+#include "tm_stm32f4_bkpsram.h"
+#include "defines.h"
 
-#define TEAM_ID 1085
+#define TEAM_ID			1085
+#define PACKETCOUNT_ADR 0x00
+#define REFALT_ADR		0x32
+#define STATE_ADR 		0x64
+#define STATEIND_ADR 	0x96
+#define FLAGTEL_ADR		0xC8
+#define HSDEPLOY_ADR 	0xFA
+#define PCDEPLOY_ADR 	0x12C
+#define MASTRAISED_ADR	0x15E
 
 extern RTC_HandleTypeDef hrtc;
 extern UART_HandleTypeDef huart2;
@@ -63,6 +74,7 @@ void maintask()
 	if(flagtel == 1)
 	{
 		counting++;
+		TM_BKPSRAM_Write16(PACKETCOUNT_ADR, counting);
 		kirimdata();
 		sprintf(buffer,"%s\n",datatelemetri.telemetritotal);
 		flagsimpan = 1;
@@ -71,12 +83,10 @@ void maintask()
 
 void init()
 {
-	servogerak(90);
 	sprintf(datatelemetri.state,"LAUNCH_WAIT");
+	READRAM();
+	servogerak(90);
 	datatelemetri.fmode = 'F';
-	datatelemetri.hsdeploy = 'N';
-	datatelemetri.pcdeploy = 'N';
-	datatelemetri.mastraised = 'N';
 	sprintf(datatelemetri.echocmd,"CXON");
 	gpslat = 0.0000;
 	gpslong = 0.0000;
@@ -85,6 +95,55 @@ void init()
 	sprintf(gpsjam,"00");
 	sprintf(gpsmenit,"00");
 	sprintf(gpsdetik,"00");
+}
+
+void READRAM()
+{
+	counting = TM_BKPSRAM_Read16(PACKETCOUNT_ADR);
+	switch(TM_BKPSRAM_Read8(STATE_ADR))
+	{
+		case 1:
+			clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
+			sprintf(datatelemetri.state,"ASCENT");
+			break;
+		case 2:
+			clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
+			sprintf(datatelemetri.state,"DESCENT");
+			break;
+		case 3:
+			clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
+			sprintf(datatelemetri.state,"HS_DEPLOYED");
+			break;
+		case 4:
+			clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
+			sprintf(datatelemetri.state,"PC_DEPLOYED");
+			break;
+		case 5:
+			clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
+			sprintf(datatelemetri.state,"LANDED");
+			break;
+		default:
+			clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
+			sprintf(datatelemetri.state,"LAUNCH_WAIT");
+			break;
+	}
+	refalt = TM_BKPSRAM_ReadFloat(REFALT_ADR);
+	flagstate = TM_BKPSRAM_Read8(STATEIND_ADR);
+	flagtel = TM_BKPSRAM_Read8(FLAGTEL_ADR);
+	datatelemetri.hsdeploy = TM_BKPSRAM_Read8(HSDEPLOY_ADR);
+	datatelemetri.pcdeploy = TM_BKPSRAM_Read8(PCDEPLOY_ADR);
+	datatelemetri.mastraised = TM_BKPSRAM_Read8(MASTRAISED_ADR);
+}
+
+void RESETSRAM()
+{
+	TM_BKPSRAM_Write16(PACKETCOUNT_ADR, counting);
+	TM_BKPSRAM_Write8(STATE_ADR,0);
+	TM_BKPSRAM_WriteFloat(REFALT_ADR,refalt);
+	TM_BKPSRAM_Write8(STATEIND_ADR,flagstate);
+	TM_BKPSRAM_Write8(HSDEPLOY_ADR,datatelemetri.hsdeploy);
+	TM_BKPSRAM_Write8(PCDEPLOY_ADR,datatelemetri.pcdeploy);
+	TM_BKPSRAM_Write8(MASTRAISED_ADR,datatelemetri.mastraised);
 }
 
 void ADC_measure()
@@ -263,10 +322,14 @@ void CX()
 {
 	clearstring(commandbuff,15);
 	isidata(4,commandbuff);
-	if((commandbuff[0] == 'O')&&(commandbuff[1] == 'N'))
+	if((commandbuff[0] == 'O')&&(commandbuff[1] == 'N')){
 		flagtel = 1;
-	if((commandbuff[0] == 'O')&&(commandbuff[1] == 'F'))
+		TM_BKPSRAM_Write8(FLAGTEL_ADR,flagtel);
+	}
+	if((commandbuff[0] == 'O')&&(commandbuff[1] == 'F')){
 		flagtel = 0;
+		TM_BKPSRAM_Write8(FLAGTEL_ADR,flagtel);
+	}
 	clearstring(datatelemetri.echocmd,15);
 	sprintf(datatelemetri.echocmd,"CXON");
 }
@@ -311,6 +374,7 @@ void SIM()
 	}
 	else if(commandbuff[0] == 'D' && commandbuff[1] == 'I')
 	{
+		flagrefalt = 0;
 		clearstring(datatelemetri.echocmd,15);
 		flagsim = 0;
 		datatelemetri.fmode = 'F';
@@ -339,30 +403,36 @@ void CAL()
 	if(flagsim == 0)
 		refalt = pressuretoalt(Pressure/100);
 	init();
+	counting  = 0;
+	datatelemetri.packetcount = counting;
 	flagsim = 0;
 	flagstate = 0;
+	flagrefalt = 0;
 	flaginitmotor = 1;
 	datatelemetri.hsdeploy = 'N';
 	datatelemetri.pcdeploy = 'N';
 	datatelemetri.mastraised = 'N';
 	flagbukaprobe = 0;
 	servogerak(90);
-	flagrefalt = 0;
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, RESET);
+	RESETSRAM();
 }
 
 void state()
 {
 	if(datatelemetri.alt > 100 && flagstate == 0)
 	{
+		clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
 		sprintf(datatelemetri.state,"ASCENT");
 		flagstate = 1;
+		TM_BKPSRAM_Write8(STATEIND_ADR,0);
 	}
 	else if((datatelemetri.alt - tempalt) < 0 && flagstate == 1)
 	{
+		TM_BKPSRAM_Write8(STATEIND_ADR,1);
 		valid++;
 		if(valid > 4)
 		{
+			clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
 			sprintf(datatelemetri.state,"DESCENT");
 			flagstate = 2;
 			valid = 0;
@@ -371,27 +441,48 @@ void state()
 	}
 	else if(datatelemetri.alt < 500 && flagstate == 2)
 	{
+		clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
+		TM_BKPSRAM_Write8(STATEIND_ADR,2);
 		sprintf(datatelemetri.state,"HS_DEPLOYED");
 		flagstate = 3;
 		//mulai rekam kamera, menjalankan mekanisme rilis payload dan buka heatshield
 		datatelemetri.hsdeploy = 'P';
+		datatelemetri.pcdeploy 	= 'N';
+		datatelemetri.mastraised = 'N';
+		TM_BKPSRAM_Write8(HSDEPLOY_ADR,datatelemetri.hsdeploy);
+		TM_BKPSRAM_Write8(PCDEPLOY_ADR,datatelemetri.pcdeploy);
+		TM_BKPSRAM_Write8(MASTRAISED_ADR,datatelemetri.mastraised);
 		flaginitmotor = 1;
 		flagbukaprobe = 1;
 	}
 	else if(datatelemetri.alt < 200 && flagstate == 3)
 	{
+		clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
+		TM_BKPSRAM_Write8(STATEIND_ADR,3);
 		sprintf(datatelemetri.state,"PC_DEPLOYED");
 		flagstate =4;
 		//menjalankan mekanisme membuka parasut
 		datatelemetri.pcdeploy = 'C';
+		datatelemetri.hsdeploy = 'P';
+		datatelemetri.pcdeploy 	= 'N';
+		TM_BKPSRAM_Write8(HSDEPLOY_ADR,datatelemetri.hsdeploy);
+		TM_BKPSRAM_Write8(PCDEPLOY_ADR,datatelemetri.pcdeploy);
+		TM_BKPSRAM_Write8(MASTRAISED_ADR,datatelemetri.mastraised);
 		servogerak(160);
 	}
 	else if(datatelemetri.alt < 13 && flagstate == 4)
 	{
+		clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
+		TM_BKPSRAM_Write8(STATEIND_ADR,4);
 		sprintf(datatelemetri.state,"LANDED");
 		flagstate =5;
 		//kamera mat,buzzernyala,mulai mekanisme upright
 		datatelemetri.mastraised = 'M';
+		datatelemetri.pcdeploy = 'C';
+		datatelemetri.hsdeploy = 'P';
+		TM_BKPSRAM_Write8(HSDEPLOY_ADR,datatelemetri.hsdeploy);
+		TM_BKPSRAM_Write8(PCDEPLOY_ADR,datatelemetri.pcdeploy);
+		TM_BKPSRAM_Write8(MASTRAISED_ADR,datatelemetri.mastraised);
 		flagkameraoff = 1;
 		flagupright = 1;
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, SET);
