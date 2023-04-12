@@ -38,6 +38,7 @@ FIL fil;
 FRESULT fresult;
 
 char buffer[1024];
+char namafile[15];
 uint8_t flaginitmotor;
 uint8_t flagmotor;
 uint8_t timermotor;
@@ -56,6 +57,7 @@ FATFS *pfs;
 DWORD fre_clust;
 uint32_t total,free_space;
 uint8_t flagsimpan = 0;
+
 
 int bufsize (char *buf)
 {
@@ -194,13 +196,13 @@ int main(void)
 	while (MPU6050_Init(&hi2c2) == 1);
 	kominit();
 	MX_FATFS_Init();
-	fresult = f_mount(&fs,"",0);
+	fresult = f_mount(&fs,"",1);
 	adcinit();
 	gpsinit();
 	HAL_TIM_Base_Start_IT(&htim11);
 	HAL_TIM_Base_Start_IT(&htim13);
 	HAL_TIM_Base_Start_IT(&htim10);
-
+	sprintf(namafile,"%d.txt",TM_BKPSRAM_Read16(0x190));
 	while (1)
 	{
 		if(flaginitmotor)
@@ -231,7 +233,7 @@ int main(void)
 
 		if(flagsimpan)
 		{
-			fresult = f_open(&fil, "file17.txt", FA_OPEN_ALWAYS|FA_READ|FA_WRITE);
+			fresult = f_open(&fil, namafile, FA_OPEN_ALWAYS|FA_READ|FA_WRITE);
 			fresult = f_lseek(&fil,f_size(&fil));
 			fresult = f_write(&fil,buffer,bufsize(buffer),&bw);
 			f_close(&fil);

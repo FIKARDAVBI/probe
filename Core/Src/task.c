@@ -43,6 +43,7 @@ extern uint8_t flagkameraon;
 extern uint8_t flagkameraoff;
 extern uint8_t flagupright;
 extern uint8_t flagbukaprobe;
+extern char namafile[15];
 
 uint8_t flagtel=0,flagsim = 0,flagstate = 0,valid = 0;
 uint16_t mseconds,counting = 1;
@@ -289,10 +290,10 @@ void Settime(uint8_t jam_, uint8_t menit_, uint8_t detik_)
 	  {
 	    Error_Handler();
 	  }
-	  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
-	  sDate.Month = RTC_MONTH_JANUARY;
-	  sDate.Date = 0x1;
-	  sDate.Year = 0x0;
+	  sDate.WeekDay = RTC_WEEKDAY_WEDNESDAY;
+	  sDate.Month = RTC_MONTH_APRIL;
+	  sDate.Date = 0x12;
+	  sDate.Year = 0x23;
 
 	  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN) != HAL_OK)
 	  {
@@ -400,9 +401,10 @@ void SIMP()
 
 void CAL()
 {
+	TM_BKPSRAM_Write16(0x190,(TM_BKPSRAM_Read16(0x190))+1);
+	sprintf(namafile,"%d.txt",TM_BKPSRAM_Read16(0x190));
 	if(flagsim == 0)
 		refalt = pressuretoalt(Pressure/100);
-	init();
 	counting  = 0;
 	datatelemetri.packetcount = counting;
 	flagsim = 0;
@@ -414,7 +416,9 @@ void CAL()
 	datatelemetri.mastraised = 'N';
 	flagbukaprobe = 0;
 	servogerak(90);
+	sprintf(datatelemetri.state,"LAUNCH_WAIT");
 	RESETSRAM();
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, RESET);
 }
 
 void state()
@@ -424,6 +428,7 @@ void state()
 		clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
 		sprintf(datatelemetri.state,"ASCENT");
 		flagstate = 1;
+		TM_BKPSRAM_Write8(STATE_ADR,1);
 		TM_BKPSRAM_Write8(STATEIND_ADR,0);
 	}
 	else if((datatelemetri.alt - tempalt) < 0 && flagstate == 1)
@@ -434,6 +439,7 @@ void state()
 		{
 			clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
 			sprintf(datatelemetri.state,"DESCENT");
+			TM_BKPSRAM_Write8(STATE_ADR,2);
 			flagstate = 2;
 			valid = 0;
 			flagkameraon = 1;
@@ -444,6 +450,7 @@ void state()
 		clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
 		TM_BKPSRAM_Write8(STATEIND_ADR,2);
 		sprintf(datatelemetri.state,"HS_DEPLOYED");
+		TM_BKPSRAM_Write8(STATE_ADR,3);
 		flagstate = 3;
 		//mulai rekam kamera, menjalankan mekanisme rilis payload dan buka heatshield
 		datatelemetri.hsdeploy = 'P';
@@ -460,6 +467,7 @@ void state()
 		clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
 		TM_BKPSRAM_Write8(STATEIND_ADR,3);
 		sprintf(datatelemetri.state,"PC_DEPLOYED");
+		TM_BKPSRAM_Write8(STATE_ADR,4);
 		flagstate =4;
 		//menjalankan mekanisme membuka parasut
 		datatelemetri.pcdeploy = 'C';
@@ -475,6 +483,7 @@ void state()
 		clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
 		TM_BKPSRAM_Write8(STATEIND_ADR,4);
 		sprintf(datatelemetri.state,"LANDED");
+		TM_BKPSRAM_Write8(STATE_ADR,5);
 		flagstate =5;
 		//kamera mat,buzzernyala,mulai mekanisme upright
 		datatelemetri.mastraised = 'M';
