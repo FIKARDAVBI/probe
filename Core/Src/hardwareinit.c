@@ -375,6 +375,8 @@ void MX_TIM10_Init(void)
 /**
   * @brief TIM11 Initialization Function
   * @param None
+  *
+  *
   * @retval None
   */
 void MX_TIM11_Init(void)
@@ -423,7 +425,7 @@ void MX_TIM13_Init(void)
   htim13.Instance = TIM13;
   htim13.Init.Prescaler = 42000-1;
   htim13.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim13.Init.Period = 250-1;
+  htim13.Init.Period = 100-1;
   htim13.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim13.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim13) != HAL_OK)
@@ -560,17 +562,20 @@ void MX_DMA_Init(void)
   HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
   /* DMA1_Stream6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 1, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 3, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
   /* DMA2_Stream0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 2, 4);
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 6, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
   /* DMA2_Stream2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 3, 4);
+  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 6, 4);
   HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
   /* DMA2_Stream7_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 14, 14);
   HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
+
+  HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(USART1_IRQn, 1, 0);
 }
 
 /**

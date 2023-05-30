@@ -388,7 +388,7 @@ void SIMP()
 	if(flagsim == 2)
 	{
 		clearstring(datatelemetri.echocmd,15);
-		clearstring(commandbuff,15);
+		clearstring(commandbuff,10);
 		isidata(4,commandbuff);
 		Spressure = atof(commandbuff);
 		sprintf(datatelemetri.echocmd,"SIMP%.2f",Spressure);
@@ -401,16 +401,24 @@ void SIMP()
 
 void CAL()
 {
-	TM_BKPSRAM_Write16(0x190,(TM_BKPSRAM_Read16(0x190))+1);
+	uint16_t buffnama = TM_BKPSRAM_Read16(0x190);
+	if(buffnama < 100){
+		TM_BKPSRAM_Write16(0x190,buffnama+1);
+	}
+	else {
+		TM_BKPSRAM_Write16(0x190,0);
+		TM_BKPSRAM_Write16(0x191,0);
+		TM_BKPSRAM_Write16(0x192,0);
+	}
 	sprintf(namafile,"%d.txt",TM_BKPSRAM_Read16(0x190));
 	if(flagsim == 0)
 		refalt = pressuretoalt(Pressure/100);
 	counting  = 0;
+	flaginitmotor=1;
 	datatelemetri.packetcount = counting;
 	flagsim = 0;
 	flagstate = 0;
 	flagrefalt = 0;
-	flaginitmotor = 1;
 	datatelemetri.hsdeploy = 'N';
 	datatelemetri.pcdeploy = 'N';
 	datatelemetri.mastraised = 'N';
@@ -504,6 +512,14 @@ void BK()
 	isidata(4,commandbuff);
 	timermotor = atoi(commandbuff);
 	flagmotor = 1;
+}
+
+void TP(){
+	//flaginitmotor = 1;
+}
+
+void CR(){
+	NVIC_SystemReset();
 }
 
 void adcinit()

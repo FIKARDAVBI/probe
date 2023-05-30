@@ -33,6 +33,8 @@ void ADC_measure();
 void adcinit();
 void READRAM();
 void RESETSRAM();
+void CR();
+void TP();
 
 typedef struct {
 	char telemetri1[36];

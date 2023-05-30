@@ -84,6 +84,32 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim == &htim13)
 	{
 		BME280_Measure();
+
+		if(flaginitmotor)
+		{
+			if(!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9)){
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, SET);
+				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, RESET);
+			}
+			else if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9)){
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, RESET);
+				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, RESET);
+				flaginitmotor = 0;
+			}
+		}
+
+		if(flagupright){
+			if(!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12)){
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, RESET);
+				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, SET);
+			}
+			else if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12)){
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, RESET);
+				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, RESET);
+				flagupright = 0;
+				flagdoneupright = 1;
+			}
+		}
 	}
 	if (htim == &htim10)
 	{
@@ -192,8 +218,8 @@ int main(void)
 	TM_BKPSRAM_Init();
 	init();
 	rtcbackup();
-	BME280_Config(OSRS_2, OSRS_16, OSRS_1, MODE_NORMAL, T_SB_0p5, IIR_16);
 	while (MPU6050_Init(&hi2c2) == 1);
+	BME280_Config(OSRS_2, OSRS_16, OSRS_1, MODE_NORMAL, T_SB_0p5, IIR_16);
 	kominit();
 	MX_FATFS_Init();
 	fresult = f_mount(&fs,"",1);
@@ -205,31 +231,6 @@ int main(void)
 	sprintf(namafile,"%d.txt",TM_BKPSRAM_Read16(0x190));
 	while (1)
 	{
-		if(flaginitmotor)
-		{
-			if(!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9)){
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, SET);
-				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, RESET);
-			}
-			else if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9)){
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, RESET);
-				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, RESET);
-				flaginitmotor = 0;
-			}
-		}
-
-		if(flagupright){
-			if(!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12)){
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, RESET);
-				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, SET);
-			}
-			else if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12)){
-				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, RESET);
-				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, RESET);
-				flagupright = 0;
-				flagdoneupright = 1;
-			}
-		}
 
 		if(flagsimpan)
 		{
