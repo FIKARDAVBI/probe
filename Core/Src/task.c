@@ -468,7 +468,7 @@ void state()
 		//menjalankan mekanisme membuka parasut
 		datatelemetri.pcdeploy = 'C';
 		datatelemetri.hsdeploy = 'P';
-		datatelemetri.pcdeploy 	= 'N';
+		datatelemetri.mastraised = 'N';
 		TM_BKPSRAM_Write8(HSDEPLOY_ADR,datatelemetri.hsdeploy);
 		TM_BKPSRAM_Write8(PCDEPLOY_ADR,datatelemetri.pcdeploy);
 		TM_BKPSRAM_Write8(MASTRAISED_ADR,datatelemetri.mastraised);
