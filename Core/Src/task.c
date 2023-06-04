@@ -43,7 +43,6 @@ extern uint8_t flagkameraon;
 extern uint8_t flagkameraoff;
 extern uint8_t flagupright;
 extern uint8_t flagbukaprobe;
-extern char namafile[15];
 
 uint8_t flagtel=0,flagsim = 0,flagstate = 0,valid = 0;
 uint16_t mseconds,counting = 1;
@@ -401,20 +400,9 @@ void SIMP()
 
 void CAL()
 {
-	uint16_t buffnama = TM_BKPSRAM_Read16(0x190);
-	if(buffnama < 100){
-		TM_BKPSRAM_Write16(0x190,buffnama+1);
-	}
-	else {
-		TM_BKPSRAM_Write16(0x190,0);
-		TM_BKPSRAM_Write16(0x191,0);
-		TM_BKPSRAM_Write16(0x192,0);
-	}
-	sprintf(namafile,"%d.txt",TM_BKPSRAM_Read16(0x190));
 	if(flagsim == 0)
 		refalt = pressuretoalt(Pressure/100);
 	counting  = 0;
-	flaginitmotor=1;
 	datatelemetri.packetcount = counting;
 	flagsim = 0;
 	flagstate = 0;
@@ -514,8 +502,8 @@ void BK()
 	flagmotor = 1;
 }
 
-void TP(){
-	//flaginitmotor = 1;
+void TK(){
+	flaginitmotor = 1;
 }
 
 void CR(){

@@ -8,7 +8,7 @@
 #include "task.h"
 #include "stm32f4xx_hal.h"
 
-char cx[]="CX",st[]="ST",sim[]="SIM",simp[]="SIMP",cal[]="CAL",bk[]="BK",tp[]="TP",cr[]="CR", end[]="\n\r",tn[]="1085";
+char cx[]="CX",st[]="ST",sim[]="SIM",simp[]="SIMP",cal[]="CAL",bk[]="BK",tc[]="TC",cr[]="CR", end[]="\n\r",tn[]="1085";
 uint8_t cmd,rxdata[2],datalkp[30],i;
 extern UART_HandleTypeDef huart2;
 
@@ -76,7 +76,7 @@ void checkdata_()
 			else if ((cocokan(3,st)==2)&&(cocokan(2,tn)==4)) ST();
 			else if ((cocokan(3,bk)==2)&&(cocokan(2,tn)==4)) BK();
 			else if ((cocokan(3,cr)==2)&&(cocokan(2,tn)==4)) CR();
-			else if ((cocokan(3,tp)==2)&&(cocokan(2,tn)==4)) TP();
+			else if ((cocokan(3,tc)==2)&&(cocokan(2,tn)==4)) TK();
 		}
 		else
 		{

@@ -83,6 +83,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim == &htim13)
 	{
+	}
+	if (htim == &htim10)
+	{
+		parsinggpsdata();
+		maintask();
+	    /* USER CODE BEGIN 3 */
+	}
+
+	if (htim == &htim11)
+	{
 		BME280_Measure();
 
 		if(flaginitmotor)
@@ -110,16 +120,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 				flagdoneupright = 1;
 			}
 		}
-	}
-	if (htim == &htim10)
-	{
-		parsinggpsdata();
-		maintask();
-	    /* USER CODE BEGIN 3 */
-	}
 
-	if (htim == &htim11)
-	{
 		MPUread();
 		if(flagmotor){
 			timermotor--;
@@ -226,15 +227,14 @@ int main(void)
 	adcinit();
 	gpsinit();
 	HAL_TIM_Base_Start_IT(&htim11);
-	HAL_TIM_Base_Start_IT(&htim13);
+	//HAL_TIM_Base_Start_IT(&htim13);
 	HAL_TIM_Base_Start_IT(&htim10);
-	sprintf(namafile,"%d.txt",TM_BKPSRAM_Read16(0x190));
+	//sprintf(namafile,"%d.txt",TM_BKPSRAM_Read16(0x190));
 	while (1)
 	{
-
 		if(flagsimpan)
 		{
-			fresult = f_open(&fil, namafile, FA_OPEN_ALWAYS|FA_READ|FA_WRITE);
+			fresult = f_open(&fil, "1.txt", FA_OPEN_ALWAYS|FA_READ|FA_WRITE);
 			fresult = f_lseek(&fil,f_size(&fil));
 			fresult = f_write(&fil,buffer,bufsize(buffer),&bw);
 			f_close(&fil);

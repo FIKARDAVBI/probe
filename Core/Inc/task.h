@@ -34,7 +34,7 @@ void adcinit();
 void READRAM();
 void RESETSRAM();
 void CR();
-void TP();
+void TK();
 
 typedef struct {
 	char telemetri1[36];
