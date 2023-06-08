@@ -49,7 +49,7 @@ uint8_t flagkameraoff;
 uint8_t timerkamera2 = 26;
 uint8_t flagupright;
 uint8_t flagbukaprobe;
-uint8_t timerbukaprobe = 16;
+uint8_t timerbukaprobe = 6;
 uint8_t flagdoneupright;
 
 UINT br,bw;
@@ -204,7 +204,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 				timermotor = 28;
 				flagmotor = 1;
 				flagbukaprobe = 0;
-				timerbukaprobe = 16;
+				timerbukaprobe = 6;
 			}
 		}
 	}
