@@ -40,6 +40,7 @@ FRESULT fresult;
 char buffer[1024];
 char namafile[15];
 uint8_t flaginitmotor;
+uint8_t flagkuncupmotor;
 uint8_t flagmotor;
 uint8_t timermotor;
 uint8_t flagkameraon;
@@ -83,18 +84,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim == &htim13)
 	{
-	}
-	if (htim == &htim10)
-	{
-		parsinggpsdata();
-		maintask();
-	    /* USER CODE BEGIN 3 */
-	}
-
-	if (htim == &htim11)
-	{
-		BME280_Measure();
-
 		if(flaginitmotor)
 		{
 			if(!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9)){
@@ -106,6 +95,21 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, RESET);
 				flaginitmotor = 0;
 			}
+		}
+
+		if(flagkuncupmotor)
+		{
+			if(!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9)){
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, SET);
+				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, RESET);
+			}
+			else if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9)){
+				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, RESET);
+				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, RESET);
+				flagkuncupmotor = 0;
+				flagbukaprobe = 1;
+			}
+
 		}
 
 		if(flagupright){
@@ -120,7 +124,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 				flagdoneupright = 1;
 			}
 		}
+	}
 
+	if (htim == &htim10)
+	{
+		parsinggpsdata();
+		maintask();
+	    /* USER CODE BEGIN 3 */
+	}
+
+	if (htim == &htim11)
+	{
+		BME280_Measure();
 		MPUread();
 		if(flagmotor){
 			timermotor--;
@@ -227,7 +242,7 @@ int main(void)
 	adcinit();
 	gpsinit();
 	HAL_TIM_Base_Start_IT(&htim11);
-	//HAL_TIM_Base_Start_IT(&htim13);
+	HAL_TIM_Base_Start_IT(&htim13);
 	HAL_TIM_Base_Start_IT(&htim10);
 	//sprintf(namafile,"%d.txt",TM_BKPSRAM_Read16(0x190));
 	while (1)

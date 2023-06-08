@@ -43,6 +43,7 @@ extern uint8_t flagkameraon;
 extern uint8_t flagkameraoff;
 extern uint8_t flagupright;
 extern uint8_t flagbukaprobe;
+extern uint8_t flagkuncupmotor;
 
 uint8_t flagtel=0,flagsim = 0,flagstate = 0,valid = 0;
 uint16_t mseconds,counting = 1;
@@ -52,6 +53,7 @@ MPU6050_t MPU6050;
 uint8_t flag222;
 uint32_t dataadc;
 uint8_t flagrefalt;
+uint8_t flaginvalid;
 
 float Temperature, Pressure,Humidity,Spressure = 101325,refalt = 0,tempalt = 0;
 
@@ -419,6 +421,10 @@ void CAL()
 
 void state()
 {
+	if((tempalt-datatelemetri.alt)>49)
+		flaginvalid = 1;
+	else
+		flaginvalid = 0;
 	if(datatelemetri.alt > 100 && flagstate == 0)
 	{
 		clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
@@ -441,7 +447,7 @@ void state()
 			flagkameraon = 1;
 		}
 	}
-	else if(datatelemetri.alt < 500 && flagstate == 2)
+	else if(datatelemetri.alt < 500 && flagstate == 2 && !flaginvalid)
 	{
 		clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
 		TM_BKPSRAM_Write8(STATEIND_ADR,2);
@@ -455,10 +461,9 @@ void state()
 		TM_BKPSRAM_Write8(HSDEPLOY_ADR,datatelemetri.hsdeploy);
 		TM_BKPSRAM_Write8(PCDEPLOY_ADR,datatelemetri.pcdeploy);
 		TM_BKPSRAM_Write8(MASTRAISED_ADR,datatelemetri.mastraised);
-		flaginitmotor = 1;
-		flagbukaprobe = 1;
+		flagkuncupmotor = 1;
 	}
-	else if(datatelemetri.alt < 200 && flagstate == 3)
+	else if(datatelemetri.alt < 200 && flagstate == 3 && !flaginvalid)
 	{
 		clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
 		TM_BKPSRAM_Write8(STATEIND_ADR,3);
@@ -474,7 +479,7 @@ void state()
 		TM_BKPSRAM_Write8(MASTRAISED_ADR,datatelemetri.mastraised);
 		servogerak(160);
 	}
-	else if(datatelemetri.alt < 13 && flagstate == 4)
+	else if(datatelemetri.alt < 13 && flagstate == 4 && !flaginvalid)
 	{
 		clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
 		TM_BKPSRAM_Write8(STATEIND_ADR,4);
