@@ -407,6 +407,9 @@ void CAL()
 	datatelemetri.pcdeploy = 'N';
 	datatelemetri.mastraised = 'N';
 	flagbukaprobe = 0;
+	flagkuncupmotor = 0;
+	flaginitmotor = 0;
+	flaginvalid = 0;
 	servogerak(90);
 	sprintf(datatelemetri.state,"LAUNCH_WAIT");
 	RESETSRAM();
@@ -461,6 +464,8 @@ void state()
 	}
 	else if(datatelemetri.alt < 200 && flagstate == 4 && !flaginvalid)
 	{
+		flagkuncupmotor = 0;
+		flaginitmotor = 0;
 		clearstring(datatelemetri.state, strlen((char*)datatelemetri.state));
 		TM_BKPSRAM_Write8(STATEIND_ADR,4);
 		sprintf(datatelemetri.state,"PC_DEPLOYED");
