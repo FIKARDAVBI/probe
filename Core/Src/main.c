@@ -49,8 +49,10 @@ uint8_t flagkameraoff;
 uint8_t timerkamera2 = 26;
 uint8_t flagupright;
 uint8_t flagbukaprobe;
-uint8_t timerbukaprobe = 9;
+uint8_t timerbukaprobe = 10;
 uint8_t flagdoneupright;
+uint8_t timerupright = 14;
+uint8_t flagmotorupright;
 
 UINT br,bw;
 
@@ -112,7 +114,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 		}
 
-		if(flagupright){
+		if(flagmotorupright){
 			if(!HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12)){
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, RESET);
 				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, SET);
@@ -120,7 +122,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			else if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12)){
 				HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, RESET);
 				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, RESET);
-				flagupright = 0;
+				flagmotorupright = 0;
 				flagdoneupright = 1;
 			}
 		}
@@ -204,7 +206,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 				timermotor = 28;
 				flagmotor = 1;
 				flagbukaprobe = 0;
-				timerbukaprobe = 9;
+				timerbukaprobe = 10;
+			}
+		}
+
+		if(flagupright){
+			timerupright--;
+			if(timerupright < 1){
+				flagmotorupright = 1;
+				timerupright = 14;
+				flagupright = 0;
 			}
 		}
 	}
